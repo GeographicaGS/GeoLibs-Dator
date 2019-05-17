@@ -1,0 +1,113 @@
+datastorages:
+  csv_input:
+    type: csv
+    data:
+      location: ./my_data.csv
+
+  postgresql_input_0:
+    type: postgresql
+    credentials:
+      host: postgis
+      user: user
+      password: password
+      port: 5432
+      db: db
+    data:
+      query: SELECT * FROM schema.table;
+
+  postgresql_input_1:
+    type: postgresql
+    credentials:
+      host: postgis
+      user: user
+      password: password
+      port: 5432
+      db: db
+    data:
+      schema: schema
+      table: table
+
+  postgresql_output:
+    type: postgresql
+    credentials:
+      host: postgis
+      user: user
+      password: password
+      port: 5432
+      db: db
+    data:
+      schema: povo_engine
+      table: sf_containers
+      append: True
+
+  bigquery_input:
+    type: bigquery
+    data:
+      query: SELECT * FROM `dataset.table` WHERE updated_at >= '2019-05-04T00:00:00Z' AND updated_at < '2019-06-01T00:00:00Z';
+
+  carto_input:
+    type: carto
+    credentials:
+      url: https://domain.com/user/user/
+      api_key: api_key
+    data:
+      table: table
+      
+  carto_output:
+    type: carto
+    credentials:
+      url: https://domain.com/user/user/
+      api_key: api_key
+    data:
+      table: table
+      append: false
+
+transformations:
+  pandas_agg:
+    type: pandas
+    time:
+      field: updated_at
+      start: "2019-05-02T00:00:00Z"  # As string or YAML will parse them as DateTimes
+      finish: "2019-05-03T00:00:00Z"
+      step: 1H
+    aggregate:
+      by:
+        - id
+        - updated_at
+      fields:
+        field_0: mean
+        field_1: max
+
+  carto_agg:
+    type: carto
+    time:
+      field: updated_at
+      start: "2019-05-02T00:00:00Z"  # As string or YAML will parse them as DateTimes
+      finish: "2019-05-03T00:00:00Z"
+      step: 15 minutes
+    aggregate:
+      by:
+        - id
+        - updated_at
+      fields:
+        field_0: [avg, min]
+        field_1: max
+
+  bigquery_agg:
+    type: bigquery
+    time:
+      field: updated_at
+      start: "2019-05-02T00:00:00Z"  # As string or YAML will parse them as DateTimes
+      finish: "2019-05-03T00:00:00Z"
+      step: 5 MINUTE
+    aggregate:
+      by:
+        - container_id
+        - updated_at
+      fields:
+        field_0: avg
+        field_1: max
+
+extract: bigquery_input
+transform: bigquery_agg
+load: carto_output

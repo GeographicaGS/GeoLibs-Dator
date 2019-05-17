@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  jupyter:
+    build:
+      context: .
+      args:
+        ENVIRONMENT: local
+    image: geolibs-dator:latest
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/credentials.json
+    volumes:
+      - ./:/usr/src/app
+    ports:
+      - '8888:8888'
+    command: jupyter
+    restart: unless-stopped
+
+  lint:
+    build:
+      context: .
+      args:
+          ENVIRONMENT: local
+    image: geolibs-dator:latest
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/credentials.json
+    volumes:
+      - ./:/usr/src/app
+    command: lint
+
+  test:
+    build:
+      context: .
+      args:
+          ENVIRONMENT: local
+    image: geolibs-dator:latest
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/credentials.json
+    volumes:
+      - ./:/usr/src/app
+    command: test

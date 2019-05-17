@@ -1,0 +1,100 @@
+kind: pipeline
+name: build_docker
+trigger:
+  repo:
+    include:
+      - GeographicaGS/GeoLibs-Dator
+
+steps:
+  - name: docker_tags_push
+    image: debian:stable-slim
+    when:
+      event:
+        include:
+          - push
+    commands:
+      - echo -n "${DRONE_COMMIT_SHA},${DRONE_COMMIT_BRANCH//\//__},ci-${DRONE_BUILD_NUMBER}" > .tags
+
+  - name: docker_tags
+    image: debian:stable-slim
+    when:
+      event:
+        exclude:
+          - push
+    commands:
+      - echo -n "${DRONE_COMMIT_SHA},ci-${DRONE_BUILD_NUMBER}" > .tags
+
+  - name: docker_build_test
+    image: plugins/gcr
+    resources:
+      limits: &resources
+        memory: "1024m"
+      requests: *resources
+    settings: &build_docker
+      repo: eu.gcr.io/habichuelas/cicd/geolibs/dator
+      dockerfile: Dockerfile
+      registry: eu.gcr.io
+      json_key:
+        from_secret: google_credentials
+      build_args:
+        - ENVIRONMENT=test
+      cache_from:
+        - eu.gcr.io/habichuelas/cicd/geolibs/dator:${DRONE_COMMIT_BRANCH//\//__}
+        - eu.gcr.io/habichuelas/cicd/geolibs/dator:master
+
+  - name: poetry_build
+    image: eu.gcr.io/habichuelas/cicd/geolibs/dator:ci-${DRONE_BUILD_NUMBER}
+    resources:
+      limits: &resources
+        memory: "1024m"
+      requests: *resources
+    commands:
+      - poetry build
+
+  - name: lint
+    image: eu.gcr.io/habichuelas/cicd/geolibs/dator:ci-${DRONE_BUILD_NUMBER}
+    resources:
+      limits: &resources
+        memory: "1024m"
+      requests: *resources
+    commands:
+      - ./entrypoint.sh lint
+
+  - name: test
+    image: eu.gcr.io/habichuelas/cicd/geolibs/dator:ci-${DRONE_BUILD_NUMBER}
+    resources:
+      limits: &resources
+        memory: "1024m"
+      requests: *resources
+    commands:
+      - ./entrypoint.sh test
+
+---
+
+kind: pipeline
+name: deploy
+trigger:
+  branch:
+    - master
+  event:
+    - push
+  repo:
+    - GeographicaGS/GeoLibs-Dator
+  status:
+    - success
+depends_on:
+  - build_docker
+steps:
+  - name: poetry_publish
+    image: eu.gcr.io/habichuelas/cicd/geolibs/dator:ci-${DRONE_BUILD_NUMBER}
+    resources:
+      limits: &resources
+        memory: "1024m"
+      requests: *resources
+    environment:
+      PYPI_USER:
+        from_secret: pypi_credentials_user
+      PYPI_PSWD:
+        from_secret: pypi_credentials_pswd
+    commands:
+      - poetry publish -vvv --build --username $${PYPI_USER} --password $${PYPI_PSWD}
