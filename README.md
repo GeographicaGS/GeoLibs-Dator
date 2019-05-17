@@ -21,6 +21,55 @@ You can test them with the `example.py` file.
 
 ### Example
 
+*dator_config.yml*
+
+```yml
+datastorages:
+  bigquery_input:
+    type: bigquery
+    data:
+      query: SELECT * FROM `dataset.table` WHERE updated_at >= '2019-05-04T00:00:00Z' AND updated_at < '2019-06-01T00:00:00Z';
+
+  carto_input:
+    type: carto
+    credentials:
+      url: https://domain.com/user/user/
+      api_key: api_key
+    data:
+      table: table
+      
+  carto_output:
+    type: carto
+    credentials:
+      url: https://domain.com/user/user/
+      api_key: api_key
+    data:
+      table: table
+      append: false
+
+transformations:
+  bigquery_agg:
+    type: bigquery
+    time:
+      field: updated_at
+      start: "2019-05-02T00:00:00Z"  # As string or YAML will parse them as DateTimes
+      finish: "2019-05-03T00:00:00Z"
+      step: 5 MINUTE
+    aggregate:
+      by:
+        - container_id
+        - updated_at
+      fields:
+        field_0: avg
+        field_1: max
+
+extract: bigquery_input
+transform: bigquery_agg
+load: carto_output
+```
+
+*app.py*
+
 ```python
 from dator import Dator
 
