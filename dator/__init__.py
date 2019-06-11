@@ -18,11 +18,11 @@ class Dator():
         self._config = self._load_config(config_file_path)
 
         extract = extract if extract else self._config['extract']
-        transform = transform if transform else self._config['transform']
+        transform = transform if transform else (self._config['transform'] if 'transform' in self._config else None)
         load = load if load else self._config['load']
 
         self._extract = self._get_config(extract, 'datastorages')
-        self._transform = self._get_config(transform, 'transformations')
+        self._transform = self._get_config(transform, 'transformations') if transform else None
         self._load = self._get_config(load, 'datastorages')
 
     def _load_config(self, config_file_path):
