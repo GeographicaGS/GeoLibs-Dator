@@ -60,9 +60,15 @@ class PostgreSQL():
                 return pd.read_sql_table(self.options['data']['table'], connection,
                                          schema=self.options['data']['schema'])
 
-    def load(self, df):
+    def load(self, df, options=None):
         if_exists = 'append' if self.options['data']['append'] else 'replace'
-
+        method = options['method'] if options and 'method' in options else None
         with self.engine.connect() as connection:
-            df.to_sql(name=self.options['data']['table'], con=connection,
-                      schema=self.options['data']['schema'], if_exists=if_exists, index=False)
+            df.to_sql(
+                name=self.options['data']['table'],
+                con=connection,
+                schema=self.options['data']['schema'],
+                if_exists=if_exists,
+                index=False,
+                method=method
+            )

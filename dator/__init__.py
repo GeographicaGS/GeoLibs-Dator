@@ -56,9 +56,9 @@ class Dator():
         df = transformer.transform(df)
         return df
 
-    def load(self, df):
+    def load(self, df, options=None):
         datasource = datastorages[self._load['type']](self._load)
-        datasource.load(df)
+        datasource.load(df, options)
 
 
 __all__ = [

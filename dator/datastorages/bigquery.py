@@ -16,5 +16,5 @@ class BigQuery():
         _query = query if query is not None else self.options['data']['query']
         return self.client.query(_query).to_dataframe()
 
-    def load(self, df):
+    def load(self, df, options=None):
         raise NotImplementedError('Load method not implement for BigQuery')
