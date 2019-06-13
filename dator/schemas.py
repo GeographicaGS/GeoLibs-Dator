@@ -13,7 +13,7 @@ def validator(data, schema):
 
 class ConfigFileSchema(Schema):
     datastorages = fields.Dict(required=True)
-    transformations = fields.Dict(required=True)
+    transformations = fields.Dict()
 
     extract = fields.Str()
     transform = fields.Str()
