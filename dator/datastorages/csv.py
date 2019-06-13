@@ -12,5 +12,5 @@ class CSV():
         df = pd.read_csv(self.options['data']['location'])
         return df
 
-    def load(self, df):
+    def load(self, df, options=None):
         df.to_csv(self.options['data']['location'], index=False)

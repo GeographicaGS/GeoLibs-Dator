@@ -50,7 +50,7 @@ class CARTO:
         else:  # table
             return self.context.read(self.options['data']['table'])
 
-    def load(self, df):
+    def load(self, df, options=None):
         sql_exists = """
             SELECT to_regclass('{table}') IS NOT NULL AS exists;
             """

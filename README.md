@@ -19,7 +19,7 @@ If you are using BigQuery in your ETL process, you need to add a `GOOGLE_APPLICA
 
 You can test them with the `example.py` file.
 
-### Example
+#### Example
 
 *dator_config.yml*
 
@@ -37,7 +37,7 @@ datastorages:
       api_key: api_key
     data:
       table: table
-      
+
   carto_output:
     type: carto
     credentials:
@@ -68,6 +68,26 @@ transform: bigquery_agg
 load: carto_output
 ```
 
+### How to use
+
+This package is designed to accomplish ETL operations in three steps:
+
+#### Extract
+
+The extract method is a default method, this means although this method can be overwritten, by default, it must work via config.
+
+(This section under construction)
+
+#### Transform
+
+(This section under construction)
+
+#### Load
+
+The load method is a default method, this means although this method can be overwritten, by default, it must work via config. It can receive 2 parameters, the Pandas dataframe and a dictionary with extra info.
+
+#### Example
+
 *app.py*
 
 ```python
@@ -77,6 +97,20 @@ dator = Dator('/usr/src/app/dator_config.yml')
 df = dator.extract()
 df = dator.transform(df)
 dator.load(df)
+```
+
+*app.py* with extra info
+
+```python
+from dator import Dator
+
+def upsert_method:
+  pass
+
+dator = Dator('/usr/src/app/dator_config.yml')
+df = dator.extract()
+df = dator.transform(df)
+dator.load(df, {'method': upsert_method})
 ```
 
 ### TODOs
