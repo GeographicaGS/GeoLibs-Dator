@@ -10,6 +10,7 @@ except ImportError:
 from dator.datastorages import options as datastorages
 from dator.transformers import options as transformers
 from dator.schemas import validator, ConfigFileSchema
+from dator.utils import set_type
 
 
 class Dator():
@@ -49,7 +50,16 @@ class Dator():
 
         datasource = datastorages[self._extract['type']](self._extract)
         df = datasource.extract(query)
+        
+        # Sets data type if it is needed
+        if 'types' in self._extract['data']:
+            self._set_types(df)
+
         return df
+
+    def _set_types(self, df):
+        for type in self._extract['data']['types']:
+            df[type['name']] = set_type(type['type'], df[type['name']])
 
     def transform(self, df):
         transformer = transformers[self._transform['type']](self._transform)

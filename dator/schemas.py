@@ -14,7 +14,6 @@ def validator(data, schema):
 class ConfigFileSchema(Schema):
     datastorages = fields.Dict(required=True)
     transformations = fields.Dict()
-
     extract = fields.Str()
     transform = fields.Str()
     load = fields.Str()
@@ -32,6 +31,7 @@ class DataTableSchema(Schema):
     schema = fields.Str(default='public')
     table = fields.Str(required=True)
     append = fields.Bool(default=True)
+    types = fields.List(fields.Dict())
 
 
 class CartoCredentialsSchema(Schema):
