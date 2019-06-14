@@ -13,16 +13,12 @@ def _set_datetime(data):
     dt_data = pd.to_datetime(data)
     return dt_data.dt.tz_convert(None)
 
-def _set_geom(data):
-    return data
-
 def set_type(type, data):
     type_selector = {
         'int': _set_int,
         'float': _set_float,
         'str': _set_str,
-        'datetime': _set_datetime,
-        'geom': _set_geom
+        'datetime': _set_datetime
     }
 
     try:
@@ -30,6 +26,3 @@ def set_type(type, data):
         return type_setter(data)
     except:
         return data
-    
-
-

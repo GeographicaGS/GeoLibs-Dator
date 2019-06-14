@@ -1,17 +1,13 @@
 import os
-
 from yaml import load
-
 try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
-
 from dator.datastorages import options as datastorages
 from dator.transformers import options as transformers
 from dator.schemas import validator, ConfigFileSchema
 from dator.utils import set_type
-
 
 class Dator():
 
