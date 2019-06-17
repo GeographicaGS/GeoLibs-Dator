@@ -9,6 +9,7 @@ from dator.transformers import options as transformers
 from dator.schemas import validator, ConfigFileSchema
 from dator.utils import set_type
 
+
 class Dator():
 
     def __init__(self, config_file_path, extract=None, transform=None, load=None):
@@ -46,7 +47,7 @@ class Dator():
 
         datasource = datastorages[self._extract['type']](self._extract)
         df = datasource.extract(query)
-        
+
         # Sets data type if it is needed
         if 'types' in self._extract['data']:
             self._set_types(df)
