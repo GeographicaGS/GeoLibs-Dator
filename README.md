@@ -38,6 +38,21 @@ datastorages:
     data:
       table: table
 
+  postgresql_input:
+    credentials:
+      ...
+    data:
+      query: SELECT * FROM somewhere;
+      types:
+        - name: timeinstant
+          type: datetime
+        - name: fillinglevel
+          type: float
+        - name: temperature
+          type: int
+        - name: category
+          type: str
+
   carto_output:
     type: carto
     credentials:
