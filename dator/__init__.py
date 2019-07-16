@@ -15,11 +15,11 @@ class Dator():
     def __init__(self, config_file_path, extract=None, transform=None, load=None):
         self._config = self._load_config(config_file_path)
 
-        extract = extract if extract else self._config['extract']
-        transform = transform if transform else (self._config['transform'] if 'transform' in self._config else None)
-        load = load if load else self._config['load']
+        extract = extract if extract else self._config.get('extract', None)
+        transform = transform if transform else self._config.get('transform', None)
+        load = load if load else self._config.get('load', None)
 
-        self._extract = self._get_config(extract, 'datastorages')
+        self._extract = self._get_config(extract, 'datastorages') if extract else None
         self._transform = self._get_config(transform, 'transformations') if transform else None
         self._load = self._get_config(load, 'datastorages')
 
@@ -33,7 +33,7 @@ class Dator():
 
     def _get_config(self, id, key):
         try:
-            return self._config[key][id]
+            return self._config.get(key, {}).get(id, None)
 
         except Exception as exc:
             raise Exception('Something gone wrong with the extract or load option', exc)
