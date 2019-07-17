@@ -3,7 +3,7 @@ name = "geolibs-dator"
 packages = [
     { include = "dator" }
 ]
-version = "0.0.4"
+version = "0.0.5"
 description = "GeoLibs Dator - A data extractor"
 authors = ["Geographica <hello@geographica.com>"]
 homepage = "https://github.com/GeographicaGS/GeoLibs-Dator"
@@ -19,7 +19,7 @@ marshmallow = "^2.19"
 pandas = "^0.24.2"
 psycopg2-binary = "^2.8.2"
 PyYAML = "^5.1"
-SQLAlchemy = "^1.3"
+sqlalchemy = ">=1.1.15, <2.0.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7"
