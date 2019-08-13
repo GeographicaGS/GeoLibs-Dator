@@ -68,7 +68,7 @@ class CARTO:
                 tmp_table_name = f'{tmp_table_basename}_{tmp_table_count}'
                 self.context.write(df_chunk, tmp_table_name, overwrite=True)
             temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count+1))]
-        except carto.exceptions.CartoException as err:
+        except carto.exceptions.CartoException:
             # Clean temporary tables on import errors. i.e: 99999
             #   (https://carto.com/developers/import-api/support/import-errors/):
             temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count+1))]
@@ -83,7 +83,6 @@ class CARTO:
 
         # Insert data into 'table_name' and remove temporary tables
         self._import_from_tmp_tables(temp_tables, table_name)
-
 
     def _import_from_tmp_tables(self, temp_tables, table_name):
         for temp_table in temp_tables:
