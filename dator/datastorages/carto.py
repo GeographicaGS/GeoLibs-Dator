@@ -71,7 +71,7 @@ class CARTO:
         except carto.exceptions.CartoException:
             # Clean temporary tables on import errors. i.e: 99999
             #   (https://carto.com/developers/import-api/support/import-errors/):
-            temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count+1))]
+            temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count))]
             self.client.send(f'''DROP TABLE {', '.join(temp_tables)};''')
             raise
 
