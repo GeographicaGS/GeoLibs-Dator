@@ -1,5 +1,7 @@
+import carto
 import random
 import string
+import numpy as np
 
 from carto.auth import APIKeyAuthClient
 from carto.sql import SQLClient
@@ -51,33 +53,54 @@ class CARTO:
             return self.context.read(self.options['data']['table'])
 
     def load(self, df, options=None):
-        sql_exists = """
-            SELECT to_regclass('{table}') IS NOT NULL AS exists;
-            """
-        sql_aux = """
-            WITH columns AS (
-                SELECT array_to_string(ARRAY(
-                    SELECT col.column_name::text
-                        FROM information_schema.columns AS col
-                        WHERE table_name = '{table}'
-                            AND col.column_name NOT IN ('cartodb_id', 'the_geom_webmercator')),
-                    ', ') AS cols
-            )
-            SELECT 'INSERT INTO {table} (' || cols || ') SELECT ' || cols ||
-                    ' FROM {table_aux}; DROP TABLE {table_aux};' AS sql_statement
-                FROM columns;
-            """
+        options = options or {}
+        max_chunk_rows = options.get('max_chunk_rows', 10000)
+        append_mode = bool(self.options['data']['append'])
+        table_name = self.options['data']['table']
+        table_exists = self._table_exists(table_name)
 
-        table = self.options['data']['table']
-        table_exists = self.client.send(sql_exists.format(table=table))['rows'][0]['exists']
+        # Uploading data to temporary tables
+        try:
+            tmp_table_count = -1
+            tmp_table_basename = f'{table_name}_{"".join(random.choice(string.ascii_lowercase) for i in range(10))}'
+            for g, df_chunk in df.groupby(np.arange(len(df)) // max_chunk_rows):
+                tmp_table_count = tmp_table_count + 1
+                tmp_table_name = f'{tmp_table_basename}_{tmp_table_count}'
+                self.context.write(df_chunk, tmp_table_name, overwrite=True)
+            temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count+1))]
+        except carto.exceptions.CartoException:
+            # Clean temporary tables on import errors. i.e: 99999
+            #   (https://carto.com/developers/import-api/support/import-errors/):
+            temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count))]
+            self.client.send(f'''DROP TABLE {', '.join(temp_tables)};''')
+            raise
 
-        if not self.options['data']['append'] or not table_exists:
-            self.context.write(df, table, overwrite=True)
-            return
+        if not table_exists:
+            # Only create table (df[0:0])
+            self.context.write(df[0:0], table_name)
+        elif not append_mode:
+            self.client.send(f'''DELETE FROM {table_name};''')
 
-        table_aux = f'{table}_{"".join(random.choice(string.ascii_lowercase) for i in range(10))}'
-        self.context.write(df, table_aux)
+        # Insert data into 'table_name' and remove temporary tables
+        self._import_from_tmp_tables(temp_tables, table_name)
 
-        sql_statement = self.client.send(
-            sql_aux.format(table=table, table_aux=table_aux))['rows'][0]['sql_statement']
-        self.client.send(sql_statement)
+    def _import_from_tmp_tables(self, temp_tables, table_name):
+        for temp_table in temp_tables:
+            sql_import = self.client.send(f'''
+                WITH columns AS (
+                    SELECT array_to_string(ARRAY(
+                        SELECT col.column_name::text
+                            FROM information_schema.columns AS col
+                            WHERE table_name = '{table_name}'
+                                AND col.column_name NOT IN ('cartodb_id', 'the_geom_webmercator')),
+                        ', ') AS cols
+                )
+                SELECT 'INSERT INTO {table_name} (' || cols || ') SELECT ' || cols ||
+                        ' FROM {temp_table}; DROP TABLE {temp_table};' AS sql_statement
+                    FROM columns
+            ''')['rows'][0]['sql_statement']
+            self.client.send(sql_import)
+
+    def _table_exists(self, table_name):
+        sql = f'''SELECT to_regclass('{table_name}') IS NOT NULL AS exists'''
+        return self.client.send(sql)['rows'][0]['exists']
