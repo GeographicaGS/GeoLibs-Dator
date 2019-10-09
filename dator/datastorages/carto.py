@@ -84,7 +84,7 @@ class CARTO:
 
         # Insert data into 'table_name' and remove temporary tables
         self._import_from_tmp_tables(temp_tables, table_name)
-        self._delete_temp_tables(self, temp_tables)
+        self._delete_temp_tables(temp_tables)
 
     def _import_from_tmp_tables(self, temp_tables, table_name):
         for temp_table in temp_tables:
