@@ -73,7 +73,7 @@ class CARTO:
             # Clean temporary tables on import errors. i.e: 99999
             #   (https://carto.com/developers/import-api/support/import-errors/):
             temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count))]
-            self._delete_temp_tables(self, temp_tables)
+            self._delete_temp_tables(temp_tables)
             raise
 
         if not table_exists:
