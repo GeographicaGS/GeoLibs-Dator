@@ -3,7 +3,7 @@ name = "geolibs-dator"
 packages = [
     { include = "dator" }
 ]
-version = "0.0.6"
+version = "0.0.7"
 description = "GeoLibs Dator - A data extractor"
 authors = ["Geographica <hello@geographica.com>"]
 homepage = "https://github.com/GeographicaGS/GeoLibs-Dator"
