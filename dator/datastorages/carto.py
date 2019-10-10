@@ -60,6 +60,7 @@ class CARTO:
         table_exists = self._table_exists(table_name)
 
         # Uploading data to temporary tables
+        temp_tables = []
         try:
             tmp_table_count = -1
             tmp_table_basename = f'{table_name}_{"".join(random.choice(string.ascii_lowercase) for i in range(10))}'
@@ -72,7 +73,7 @@ class CARTO:
             # Clean temporary tables on import errors. i.e: 99999
             #   (https://carto.com/developers/import-api/support/import-errors/):
             temp_tables = [f'{tmp_table_basename}_{n}' for n in range(0, (tmp_table_count))]
-            self.client.send(f'''DROP TABLE {', '.join(temp_tables)};''')
+            self._delete_temp_tables(temp_tables)
             raise
 
         if not table_exists:
@@ -83,6 +84,7 @@ class CARTO:
 
         # Insert data into 'table_name' and remove temporary tables
         self._import_from_tmp_tables(temp_tables, table_name)
+        self._delete_temp_tables(temp_tables)
 
     def _import_from_tmp_tables(self, temp_tables, table_name):
         for temp_table in temp_tables:
@@ -104,3 +106,7 @@ class CARTO:
     def _table_exists(self, table_name):
         sql = f'''SELECT to_regclass('{table_name}') IS NOT NULL AS exists'''
         return self.client.send(sql)['rows'][0]['exists']
+
+    def _delete_temp_tables(self, temp_tables):
+        if temp_tables:
+            self.client.send(f'''DROP TABLE {', '.join(temp_tables)};''')
